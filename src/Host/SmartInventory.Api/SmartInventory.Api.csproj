@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\SmartInventory.SharedKernel\SmartInventory.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\Modules\SmartInventory.Modules.Catalog\SmartInventory.Modules.Catalog.csproj" />
+    <ProjectReference Include="..\..\Modules\SmartInventory.Modules.Forecasting\SmartInventory.Modules.Forecasting.csproj" />
+    <ProjectReference Include="..\..\Modules\SmartInventory.Modules.Identity\SmartInventory.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\SmartInventory.Modules.Inventory\SmartInventory.Modules.Inventory.csproj" />
+    <ProjectReference Include="..\..\Modules\SmartInventory.Modules.Procurement\SmartInventory.Modules.Procurement.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>
