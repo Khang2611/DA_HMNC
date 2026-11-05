@@ -1,0 +1,23 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# File-scoped namespaces (C# 10+)
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Braces required
+csharp_prefer_braces = true:warning
+
+# Unused using directives are warnings
+dotnet_diagnostic.IDE0005.severity = warning
+
+[*.{yml,yaml,json}]
+indent_style = space
+indent_size = 2
