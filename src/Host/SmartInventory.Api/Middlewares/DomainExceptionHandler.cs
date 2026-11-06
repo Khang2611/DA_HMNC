@@ -41,6 +41,18 @@ public class DomainExceptionHandler : IExceptionHandler
                 extensions["errors"] = errors;
                 break;
 
+            case UnauthorizedException unauthorizedException:
+                statusCode = StatusCodes.Status401Unauthorized;
+                title = "Unauthorized";
+                detail = unauthorizedException.Message;
+                break;
+
+            case ForbiddenException forbiddenException:
+                statusCode = StatusCodes.Status403Forbidden;
+                title = "Forbidden";
+                detail = forbiddenException.Message;
+                break;
+
             case NotFoundException notFoundException:
                 statusCode = StatusCodes.Status404NotFound;
                 title = "Resource Not Found";

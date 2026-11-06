@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BuildingBlocks\SmartInventory.SharedKernel\SmartInventory.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\src\Modules\SmartInventory.Modules.Identity\SmartInventory.Modules.Identity.csproj" />
     <ProjectReference Include="..\..\src\Modules\SmartInventory.Modules.Inventory\SmartInventory.Modules.Inventory.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,38 @@
+@startuml account-status-state
+title Vòng đời trạng thái tài khoản (Account Status Lifecycle)
+
+[*] --> Active : Khởi tạo tài khoản\n(Mặc định khi tạo)
+
+state Active {
+    Active : Được phép đăng nhập hệ thống
+    Active : Thao tác các chức năng theo vai trò
+}
+
+state Inactive {
+    Inactive : Không được phép đăng nhập (403)
+    Inactive : Tạm dừng hoạt động
+}
+
+state Locked {
+    Locked : Không được phép đăng nhập (403)
+    Locked : Khóa do vi phạm hoặc yêu cầu QTV
+}
+
+Active --> Inactive : QTV cập nhật Status = Inactive\n[Điều kiện: Không tự vô hiệu hóa chính mình,\nKhông vô hiệu hóa QTV Active cuối cùng]
+Inactive --> Active : QTV cập nhật Status = Active
+
+Active --> Locked : QTV cập nhật Status = Locked\n[Điều kiện: Không tự khóa chính mình,\nKhông khóa QTV Active cuối cùng]
+Locked --> Active : QTV mở khóa (Status = Active)
+
+Inactive --> Locked : QTV cập nhật Status = Locked
+Locked --> Inactive : QTV cập nhật Status = Inactive
+
+note right of Active
+  Các ràng buộc nghiệp vụ (Domain Rules):
+  1. Không cho phép chuyển trạng thái sang chính nó.
+  2. QTV không được tự khóa/vô hiệu hóa chính mình.
+  3. QTV cuối cùng đang Active không thể bị khóa/hạ vai trò.
+  4. Mọi chuyển trạng thái hợp lệ đều ghi nhận UpdatedAt (UTC).
+end note
+@enduml
+
