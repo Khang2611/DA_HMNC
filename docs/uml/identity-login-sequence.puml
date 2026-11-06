@@ -1,0 +1,65 @@
+@startuml identity-login-sequence
+title Quy trình đăng nhập an toàn (Login Flow) - Module Identity
+
+actor User
+participant "API Gateway / RateLimiter" as Gateway
+participant "IdentityEndpoints" as Endpoint
+participant "LoginCommandHandler" as Handler
+participant "IPasswordHasher" as Hasher
+participant "IdentityDbContext" as DB
+participant "ITokenService" as TokenService
+
+User -> Gateway: POST /api/v1/auth/login\n{username, password}
+activate Gateway
+
+alt Vượt quá 5 req/phút/IP
+    Gateway --> User: 429 Too Many Requests
+else Trong hạn mức Rate Limit
+    Gateway -> Endpoint: Chuyển tiếp request
+    activate Endpoint
+    Endpoint -> Handler: Send(LoginCommand)
+    activate Handler
+
+    Handler -> DB: Tìm Account theo Username
+    activate DB
+    DB --> Handler: Trả về Account (hoặc null)
+    deactivate DB
+
+    alt Account == null
+        Handler -> Hasher: VerifyDummyPassword(password)\n[Triệt tiêu timing attack]
+        activate Hasher
+        Hasher --> Handler
+        deactivate Hasher
+        Handler --> Endpoint: Ném UnauthorizedException (401)
+        Endpoint --> User: 401 Unauthorized\n(Thông báo chung)
+    else Account tồn tại
+        Handler -> Hasher: VerifyPassword(password, account.PasswordHash)
+        activate Hasher
+        Hasher --> Handler: Boolean (hợp lệ hay không)
+        deactivate Hasher
+
+        alt Sai mật khẩu
+            Handler --> Endpoint: Ném UnauthorizedException (401)
+            Endpoint --> User: 401 Unauthorized\n(Thông báo chung)
+        else Mật khẩu chính xác
+            alt Trạng thái khác Active (Locked/Inactive)
+                Handler --> Endpoint: Ném ForbiddenException (403)\nkèm lý do chi tiết
+                Endpoint --> User: 403 Forbidden\n("Tài khoản đã bị khóa / chưa kích hoạt")
+            else Trạng thái Active
+                Handler -> TokenService: GenerateToken(account)
+                activate TokenService
+                TokenService --> Handler: (AccessToken, ExpiresIn)
+                deactivate TokenService
+                Handler --> Endpoint: LoginResponse(AccessToken, ExpiresIn, UserDto)
+                Endpoint --> User: 200 OK + Token & Thông tin User
+            end
+        end
+    end
+
+    deactivate Handler
+    deactivate Endpoint
+end
+
+deactivate Gateway
+@enduml
+
