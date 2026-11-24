@@ -71,3 +71,4 @@ class IdentityDataSeederTest {
         verify(passwordEncoder, never()).encode(anyString());
     }
 }
+

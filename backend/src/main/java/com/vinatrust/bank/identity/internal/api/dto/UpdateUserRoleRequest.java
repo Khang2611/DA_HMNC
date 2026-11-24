@@ -10,3 +10,4 @@ public record UpdateUserRoleRequest(
         String assignedTeam
 ) {
 }
+

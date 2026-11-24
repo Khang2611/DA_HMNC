@@ -161,3 +161,4 @@ class AdminUserServiceTest {
         verify(userRepository, never()).save(any());
     }
 }
+
