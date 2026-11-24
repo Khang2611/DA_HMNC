@@ -64,7 +64,8 @@ public class IdentityDataSeeder implements CommandLineRunner {
                 Role.ADMIN,
                 UserStatus.ACTIVE,
                 "VERIFIED",
-                true,
+                true, // kycBiometricVerified
+                true, // emailVerified
                 null,
                 null
         );

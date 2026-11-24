@@ -56,6 +56,9 @@ public class User {
     @Column(name = "kyc_biometric_verified", nullable = false)
     private boolean kycBiometricVerified = false;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     @Column(name = "customer_tier", length = 50)
     private String customerTier;
 
@@ -106,6 +109,27 @@ public class User {
             String customerTier,
             String assignedTeam
     ) {
+        this(id, username, email, phone, fullName, dateOfBirth, passwordHash, transactionPinHash,
+                role, status, kycStatus, kycBiometricVerified, false, customerTier, assignedTeam);
+    }
+
+    public User(
+            UUID id,
+            String username,
+            String email,
+            String phone,
+            String fullName,
+            String dateOfBirth,
+            String passwordHash,
+            String transactionPinHash,
+            Role role,
+            UserStatus status,
+            String kycStatus,
+            boolean kycBiometricVerified,
+            boolean emailVerified,
+            String customerTier,
+            String assignedTeam
+    ) {
         this.id = id != null ? id : UUID.randomUUID();
         this.username = Objects.requireNonNull(username, "Username must not be null");
         this.email = Objects.requireNonNull(email, "Email must not be null");
@@ -118,6 +142,7 @@ public class User {
         this.status = status != null ? status : UserStatus.ACTIVE;
         this.kycStatus = kycStatus != null ? kycStatus : "UNVERIFIED";
         this.kycBiometricVerified = kycBiometricVerified;
+        this.emailVerified = emailVerified;
         this.customerTier = customerTier;
         this.assignedTeam = assignedTeam;
     }
@@ -147,6 +172,11 @@ public class User {
     }
 
     public void activate() {
+        this.status = UserStatus.ACTIVE;
+    }
+
+    public void verifyEmail() {
+        this.emailVerified = true;
         this.status = UserStatus.ACTIVE;
     }
 
@@ -185,6 +215,8 @@ public class User {
     public String getKycStatus() { return kycStatus; }
     public boolean isKycBiometricVerified() { return kycBiometricVerified; }
     public void setKycBiometricVerified(boolean kycBiometricVerified) { this.kycBiometricVerified = kycBiometricVerified; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
     public String getCustomerTier() { return customerTier; }
     public String getAssignedTeam() { return assignedTeam; }
     public Instant getCreatedAt() { return createdAt; }

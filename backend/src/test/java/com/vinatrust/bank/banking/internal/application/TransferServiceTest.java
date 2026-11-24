@@ -122,7 +122,7 @@ class TransferServiceTest {
         assertThat(sourceAccount.getBalance()).isEqualByComparingTo("45000000.0000");
         assertThat(destAccount.getBalance()).isEqualByComparingTo("15000000.0000");
 
-        verify(eventPublisher, times(1)).publishEvent(any());
+        verify(eventPublisher, times(1)).publishEvent(any(com.vinatrust.bank.banking.contracts.events.TransactionCompletedEvent.class));
     }
 
     @Test

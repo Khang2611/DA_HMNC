@@ -50,6 +50,11 @@
       "key": "targetUserId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "registeredEmail",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -69,12 +74,11 @@
                   "    pm.test(\"Status is 201 Created\", function() {",
                   "        pm.expect(pm.response.code).to.eql(201);",
                   "    });",
-                  "    if (json.data && json.data.accessToken) {",
-                  "        pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
-                  "        pm.collectionVariables.set(\"refreshToken\", json.data.refreshToken);",
+                  "    if (json.data && json.data.email) {",
+                  "        pm.collectionVariables.set(\"registeredEmail\", json.data.email);",
                   "    }",
-                  "    if (json.data && json.data.user) {",
-                  "        pm.collectionVariables.set(\"targetUserId\", json.data.user.id);",
+                  "    if (json.data && json.data.userId) {",
+                  "        pm.collectionVariables.set(\"targetUserId\", json.data.userId);",
                   "    }",
                   "}"
                 ],
@@ -96,14 +100,105 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
             },
-            "description": "Tạo tài khoản khách hàng mới. Hệ thống tự động gán vai trò CUSTOMER, hạng STANDARD và phát sự kiện tạo tài khoản thanh toán mặc định."
+            "description": "Đăng ký tài khoản khách hàng. Hệ thống tạo tài khoản ở trạng thái PENDING_VERIFICATION và gửi mã OTP 6 số vào email."
           }
         },
         {
-          "name": "1.2 Đăng nhập Khách hàng (Customer Login)",
+          "name": "1.2 Xác thực Email bằng mã OTP 6 số",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Email verified successfully\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registeredEmail}}\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "verify-email"
+              ]
+            },
+            "description": "Xác thực mã OTP 6 số nhận qua email (xem tại http://localhost:8025 trên Mailpit). Kích hoạt tài khoản sang ACTIVE và mở tài khoản thanh toán mặc định."
+          }
+        },
+        {
+          "name": "1.3 Gửi lại mã OTP xác thực (Resend Verification)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"OTP resent successfully\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registeredEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/resend-verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "resend-verification"
+              ]
+            },
+            "description": "Yêu cầu gửi lại mã OTP mới (cooldown 60s). Mã cũ chưa dùng sẽ bị hủy."
+          }
+        },
+        {
+          "name": "1.4 Đăng nhập Khách hàng (Customer Login)",
           "event": [
             {
               "listen": "test",
@@ -142,14 +237,21 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             },
             "description": "Đăng nhập bằng username/email/phone. Tự động lưu accessToken và refreshToken vào collection variables."
           }
         },
         {
-          "name": "1.3 Đăng nhập Quản trị viên (Admin Login)",
+          "name": "1.5 Đăng nhập Quản trị viên (Admin Login)",
           "event": [
             {
               "listen": "test",
@@ -185,14 +287,21 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             },
             "description": "Đăng nhập bằng tài khoản Quản trị viên khởi tạo từ seeder. Lưu riêng vào `adminAccessToken` để test các API Admin."
           }
         },
         {
-          "name": "1.4 Lấy thông tin cá nhân hiện tại (/me)",
+          "name": "1.6 Lấy thông tin cá nhân hiện tại (/me)",
           "request": {
             "method": "GET",
             "header": [
@@ -203,14 +312,21 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
             },
             "description": "Lấy profile của tài khoản đang đăng nhập từ token Bearer."
           }
         },
         {
-          "name": "1.5 Làm mới Token (Refresh Token Rotation)",
+          "name": "1.7 Làm mới Token (Refresh Token Rotation)",
           "event": [
             {
               "listen": "test",
@@ -245,14 +361,21 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/refresh",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "refresh"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
             },
             "description": "Xoay vòng refresh token. Token cũ sẽ bị hủy ngay lập tức và cấp cặp token mới."
           }
         },
         {
-          "name": "1.6 Đăng xuất (Logout)",
+          "name": "1.8 Đăng xuất (Logout)",
           "request": {
             "method": "POST",
             "header": [
@@ -271,8 +394,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
             },
             "description": "Đăng xuất tài khoản, thu hồi refresh token trong cơ sở dữ liệu."
           }
@@ -316,8 +446,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users?page=0&size=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -344,8 +481,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users?role=CUSTOMER&page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
               "query": [
                 {
                   "key": "role",
@@ -376,8 +520,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users?keyword=Khang&page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
               "query": [
                 {
                   "key": "keyword",
@@ -432,8 +583,17 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users", "{{targetUserId}}", "role"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
             },
             "description": "Nâng cấp người dùng lên AGENT. Yêu cầu thuộc 1 trong 6 đội chuyên trách. Tự động thu hồi refresh token của user."
           }
@@ -474,8 +634,17 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users", "{{targetUserId}}", "role"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
             },
             "description": "Thăng chức thành TEAM_LEAD của đội An ninh và gian lận."
           }
@@ -516,8 +685,17 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users", "{{targetUserId}}", "role"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
             },
             "description": "Chuyển lại về khách hàng thông thường, hệ thống tự xóa đội chuyên trách về null."
           }
@@ -555,8 +733,17 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "users", "{{targetUserId}}", "role"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
             },
             "description": "Kiểm tra chặn phân công vào đội không thuộc 6 đội hợp lệ theo quy tắc ngân hàng."
           }
@@ -598,8 +785,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/accounts",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "accounts"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "accounts"
+              ]
             },
             "description": "Lấy danh sách các tài khoản ngân hàng của người dùng đang đăng nhập. Tự động lưu primaryAccountId."
           }
@@ -616,8 +810,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/accounts/{{primaryAccountId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "accounts", "{{primaryAccountId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "accounts",
+                "{{primaryAccountId}}"
+              ]
             },
             "description": "Xem chi tiết số dư, hạn mức ngày, số tài khoản của 1 tài khoản cụ thể."
           }
@@ -661,8 +863,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/transfers",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "transfers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "transfers"
+              ]
             },
             "description": "Chuyển khoản nội bộ giữa các tài khoản trong hệ thống VinaTrust Bank."
           }
@@ -687,8 +896,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/transfers",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "transfers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "transfers"
+              ]
             },
             "description": "Chuyển khoản nhanh 24/7 sang ngân hàng khác qua cổng Napas."
           }
@@ -705,8 +921,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/transfers/history/{{primaryAccountId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "transfers", "history", "{{primaryAccountId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "transfers",
+                "history",
+                "{{primaryAccountId}}"
+              ]
             },
             "description": "Lấy danh sách các giao dịch chuyển tiền đã thực hiện từ tài khoản nguồn."
           }
@@ -748,8 +973,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/cards",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "cards"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards"
+              ]
             },
             "description": "Lấy toàn bộ thẻ ghi nợ/tín dụng (vật lý & ảo). Tự động lưu cardId."
           }
@@ -793,8 +1025,16 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/cards/issue",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "cards", "issue"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "issue"
+              ]
             },
             "description": "Phát hành thẻ ghi nợ ảo kích hoạt tức thì."
           }
@@ -826,8 +1066,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/lock",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "cards", "{{cardId}}", "lock"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "{{cardId}}",
+                "lock"
+              ]
             },
             "description": "Tạm khóa thẻ để bảo mật khi không sử dụng."
           }
@@ -859,8 +1108,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/unlock",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "cards", "{{cardId}}", "unlock"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "{{cardId}}",
+                "unlock"
+              ]
             },
             "description": "Mở khóa thẻ trở lại trạng thái ACTIVE."
           }
@@ -892,8 +1150,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/report-lost",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "cards", "{{cardId}}", "report-lost"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "{{cardId}}",
+                "report-lost"
+              ]
             },
             "description": "Báo mất thẻ. Thẻ sẽ bị phong tỏa vĩnh viễn (BLOCKED) và không thể tự mở lại."
           }
@@ -935,8 +1202,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/savings",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "savings"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "savings"
+              ]
             },
             "description": "Lấy danh sách các sổ tiết kiệm đang hoạt động hoặc đã tất toán. Tự động lưu savingsId."
           }
@@ -980,8 +1254,16 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/savings/open",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "savings", "open"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "savings",
+                "open"
+              ]
             },
             "description": "Mở sổ tiết kiệm trích tiền từ tài khoản thanh toán nguồn. Lãi suất tự động tính theo kỳ hạn."
           }
@@ -1013,8 +1295,17 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/savings/{{savingsId}}/settle",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "savings", "{{savingsId}}", "settle"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "savings",
+                "{{savingsId}}",
+                "settle"
+              ]
             },
             "description": "Tất toán sổ tiết kiệm, hoàn trả tiền gốc và tiền lãi tích lũy về tài khoản nguồn."
           }
@@ -1037,8 +1328,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/loans",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "loans"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "loans"
+              ]
             },
             "description": "Lấy danh sách các hồ sơ vay vốn đã đăng ký của khách hàng."
           }
@@ -1078,8 +1376,16 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/loans/apply",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "loans", "apply"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "loans",
+                "apply"
+              ]
             },
             "description": "Nộp hồ sơ vay tiêu dùng nhanh qua ứng dụng."
           }
@@ -1119,8 +1425,16 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/banking/loans/apply",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "banking", "loans", "apply"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "loans",
+                "apply"
+              ]
             },
             "description": "Nộp hồ sơ vay thế chấp bất động sản hạn mức lớn."
           }

@@ -55,6 +55,8 @@ class IdentityDataSeederTest {
         assertThat(seededAdmin.getEmail()).isEqualTo("admin@vinatrust.vn");
         assertThat(seededAdmin.getPhone()).isEqualTo("0900000001");
         assertThat(seededAdmin.getRole()).isEqualTo(Role.ADMIN);
+        assertThat(seededAdmin.getStatus()).isEqualTo(com.vinatrust.bank.identity.internal.domain.UserStatus.ACTIVE);
+        assertThat(seededAdmin.isEmailVerified()).isTrue();
         assertThat(seededAdmin.isKycBiometricVerified()).isTrue();
         assertThat(seededAdmin.getCustomerTier()).isNull();
         assertThat(seededAdmin.getAssignedTeam()).isNull();

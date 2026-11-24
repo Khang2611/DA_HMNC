@@ -14,6 +14,8 @@ Thumbs.db
 !.env.example
 
 # Dependencies & Build artifacts
+target/
+**/target/
 node_modules/
 **/node_modules/
 dist/

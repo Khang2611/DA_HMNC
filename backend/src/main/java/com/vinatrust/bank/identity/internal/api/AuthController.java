@@ -4,10 +4,12 @@ import com.vinatrust.bank.identity.internal.api.dto.AuthResponse;
 import com.vinatrust.bank.identity.internal.api.dto.LoginRequest;
 import com.vinatrust.bank.identity.internal.api.dto.RefreshTokenRequest;
 import com.vinatrust.bank.identity.internal.api.dto.RegisterRequest;
+import com.vinatrust.bank.identity.internal.api.dto.RegisterResponse;
+import com.vinatrust.bank.identity.internal.api.dto.ResendVerificationRequest;
 import com.vinatrust.bank.identity.internal.api.dto.UserProfileResponse;
+import com.vinatrust.bank.identity.internal.api.dto.VerifyEmailRequest;
 import com.vinatrust.bank.identity.internal.application.AuthService;
 import com.vinatrust.bank.shared.api.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,13 +36,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(
-            @Valid @RequestBody RegisterRequest request,
-            @RequestHeader(value = "User-Agent", defaultValue = "Unknown Device") String userAgent
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(
+            @Valid @RequestBody RegisterRequest request
     ) {
-        AuthResponse response = authService.register(request, userAgent);
+        RegisterResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Đăng ký tài khoản thành công", response));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+            @Valid @RequestBody VerifyEmailRequest request
+    ) {
+        authService.verifyEmail(request);
+        return ResponseEntity.ok(ApiResponse.success("Xác thực email và kích hoạt tài khoản thành công", null));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse<Void>> resendVerification(
+            @Valid @RequestBody ResendVerificationRequest request
+    ) {
+        authService.resendVerification(request);
+        return ResponseEntity.ok(ApiResponse.success("Mã OTP xác thực mới đã được gửi vào email của bạn", null));
     }
 
     @PostMapping("/login")
@@ -82,4 +99,3 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Lấy thông tin tài khoản thành công", response));
     }
 }
-

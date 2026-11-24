@@ -17,6 +17,7 @@ public record UserProfileResponse(
         String status,
         String kycStatus,
         boolean kycBiometricVerified,
+        boolean emailVerified,
         String customerTier,
         String assignedTeam,
         Instant createdAt,

@@ -37,6 +37,7 @@ public class UserMapper {
                 user.getStatus().name(),
                 user.getKycStatus(),
                 user.isKycBiometricVerified(),
+                user.isEmailVerified(),
                 user.getCustomerTier(),
                 user.getAssignedTeam(),
                 user.getCreatedAt(),
