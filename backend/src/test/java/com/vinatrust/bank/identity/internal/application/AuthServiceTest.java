@@ -71,7 +71,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Đăng ký thành công: phát UserRegisteredEvent và trả AuthResponse hợp lệ")
+    @DisplayName("Đăng ký thành công: luôn gán Role.CUSTOMER, phát UserRegisteredEvent và trả AuthResponse hợp lệ")
     void register_Success() {
         RegisterRequest request = new RegisterRequest(
                 "hoangnam",
@@ -129,6 +129,55 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.register(request, "Test Device"))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("Tên đăng nhập 'customer1' đã được sử dụng");
+
+        verify(userRepository, never()).save(any());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("Đăng ký thất bại khi trùng email")
+    void register_DuplicateEmail_ThrowsBusinessRuleException() {
+        RegisterRequest request = new RegisterRequest(
+                "newuser",
+                "exist@vinatrust.vn",
+                "0909111222",
+                "Tên Test",
+                "01/01/1990",
+                "Password123!",
+                "123456"
+        );
+
+        when(userRepository.existsByUsername("newuser")).thenReturn(false);
+        when(userRepository.existsByEmail("exist@vinatrust.vn")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.register(request, "Test Device"))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Email 'exist@vinatrust.vn' đã được đăng ký trong hệ thống");
+
+        verify(userRepository, never()).save(any());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("Đăng ký thất bại khi trùng số điện thoại")
+    void register_DuplicatePhone_ThrowsBusinessRuleException() {
+        RegisterRequest request = new RegisterRequest(
+                "newuser",
+                "new@vinatrust.vn",
+                "0909111222",
+                "Tên Test",
+                "01/01/1990",
+                "Password123!",
+                "123456"
+        );
+
+        when(userRepository.existsByUsername("newuser")).thenReturn(false);
+        when(userRepository.existsByEmail("new@vinatrust.vn")).thenReturn(false);
+        when(userRepository.existsByPhone("0909111222")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.register(request, "Test Device"))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Số điện thoại '0909111222' đã được đăng ký");
 
         verify(userRepository, never()).save(any());
         verify(eventPublisher, never()).publishEvent(any());
@@ -228,4 +277,3 @@ class AuthServiceTest {
         verify(refreshTokenRepository, times(2)).save(any(RefreshToken.class));
     }
 }
-

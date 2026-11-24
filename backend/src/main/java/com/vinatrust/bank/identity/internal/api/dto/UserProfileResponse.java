@@ -16,9 +16,10 @@ public record UserProfileResponse(
         String role,
         String status,
         String kycStatus,
+        boolean kycBiometricVerified,
         String customerTier,
+        String assignedTeam,
         Instant createdAt,
         Instant updatedAt
 ) {
 }
-

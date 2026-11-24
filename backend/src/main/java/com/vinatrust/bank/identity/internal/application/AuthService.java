@@ -74,7 +74,7 @@ public class AuthService {
                 ? passwordEncoder.encode(request.transactionPin())
                 : null;
 
-        // 3. Create domain User (enforce CUSTOMER role for registration)
+        // 3. Create domain User (enforce CUSTOMER role, STANDARD tier, no assignedTeam, unverified biometric)
         User user = new User(
                 UUID.randomUUID(),
                 request.username().trim().toLowerCase(),
@@ -87,7 +87,9 @@ public class AuthService {
                 Role.CUSTOMER,
                 UserStatus.ACTIVE,
                 "UNVERIFIED",
-                "STANDARD"
+                false,       // kycBiometricVerified = false
+                "STANDARD",  // customerTier = STANDARD
+                null         // assignedTeam = null
         );
 
         User savedUser = userRepository.save(user);
@@ -185,4 +187,3 @@ public class AuthService {
         );
     }
 }
-

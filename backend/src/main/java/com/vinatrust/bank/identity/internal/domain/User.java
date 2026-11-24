@@ -53,8 +53,14 @@ public class User {
     @Column(name = "kyc_status", nullable = false, length = 30)
     private String kycStatus;
 
-    @Column(name = "customer_tier", nullable = false, length = 50)
+    @Column(name = "kyc_biometric_verified", nullable = false)
+    private boolean kycBiometricVerified = false;
+
+    @Column(name = "customer_tier", length = 50)
     private String customerTier;
+
+    @Column(name = "assigned_team", length = 100)
+    private String assignedTeam;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -80,6 +86,26 @@ public class User {
             String kycStatus,
             String customerTier
     ) {
+        this(id, username, email, phone, fullName, dateOfBirth, passwordHash, transactionPinHash,
+                role, status, kycStatus, false, customerTier, null);
+    }
+
+    public User(
+            UUID id,
+            String username,
+            String email,
+            String phone,
+            String fullName,
+            String dateOfBirth,
+            String passwordHash,
+            String transactionPinHash,
+            Role role,
+            UserStatus status,
+            String kycStatus,
+            boolean kycBiometricVerified,
+            String customerTier,
+            String assignedTeam
+    ) {
         this.id = id != null ? id : UUID.randomUUID();
         this.username = Objects.requireNonNull(username, "Username must not be null");
         this.email = Objects.requireNonNull(email, "Email must not be null");
@@ -91,7 +117,9 @@ public class User {
         this.role = role != null ? role : Role.CUSTOMER;
         this.status = status != null ? status : UserStatus.ACTIVE;
         this.kycStatus = kycStatus != null ? kycStatus : "UNVERIFIED";
-        this.customerTier = customerTier != null ? customerTier : "STANDARD";
+        this.kycBiometricVerified = kycBiometricVerified;
+        this.customerTier = customerTier;
+        this.assignedTeam = assignedTeam;
     }
 
     @PrePersist
@@ -137,7 +165,13 @@ public class User {
         if (dateOfBirth != null && !dateOfBirth.isBlank()) this.dateOfBirth = dateOfBirth;
     }
 
-    // Getters
+    public void changeRole(Role newRole, String assignedTeam, String customerTier) {
+        this.role = Objects.requireNonNull(newRole, "New role must not be null");
+        this.assignedTeam = assignedTeam;
+        this.customerTier = customerTier;
+    }
+
+    // Getters and Setters
     public UUID getId() { return id; }
     public String getUsername() { return username; }
     public String getEmail() { return email; }
@@ -149,8 +183,10 @@ public class User {
     public Role getRole() { return role; }
     public UserStatus getStatus() { return status; }
     public String getKycStatus() { return kycStatus; }
+    public boolean isKycBiometricVerified() { return kycBiometricVerified; }
+    public void setKycBiometricVerified(boolean kycBiometricVerified) { this.kycBiometricVerified = kycBiometricVerified; }
     public String getCustomerTier() { return customerTier; }
+    public String getAssignedTeam() { return assignedTeam; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
-
