@@ -10,6 +10,7 @@ public class UserMapper {
 
     public UserSummaryDto toUserSummaryDto(User user) {
         if (user == null) return null;
+        boolean kycBiometricVerified = "VERIFIED".equalsIgnoreCase(user.getKycStatus());
         return new UserSummaryDto(
                 user.getId(),
                 user.getUsername(),
@@ -19,7 +20,8 @@ public class UserMapper {
                 user.getRole().name(),
                 user.getStatus().name(),
                 user.getKycStatus(),
-                user.getCustomerTier()
+                user.getCustomerTier(),
+                kycBiometricVerified
         );
     }
 
@@ -41,4 +43,3 @@ public class UserMapper {
         );
     }
 }
-

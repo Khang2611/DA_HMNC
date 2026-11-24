@@ -1,0 +1,298 @@
+{
+  "info": {
+    "_postman_id": "b3e0c091-8888-4f51-b0e2-vinatrust-banking",
+    "name": "VinaTrust Bank - Full API (Identity + Banking)",
+    "description": "Postman Collection for VinaTrust Bank (Identity + Banking Modules: Accounts, Transfers, Cards, Savings, Loans).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "primaryAccountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cardId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "savingsId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Identity Module",
+      "item": [
+        {
+          "name": "1.1. Login (Customer 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data) {",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.data.accessToken);",
+                  "        pm.collectionVariables.set(\"refreshToken\", jsonData.data.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"customer1\",\n  \"password\": \"VinaTrust@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "login"] }
+          }
+        },
+        {
+          "name": "1.2. Get Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "me"] }
+          }
+        },
+        {
+          "name": "1.3. Refresh Token Rotation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data) {",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.data.accessToken);",
+                  "        pm.collectionVariables.set(\"refreshToken\", jsonData.data.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "refresh"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Banking Module",
+      "item": [
+        {
+          "name": "2.1. Accounts - Get All My Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"primaryAccountId\", jsonData.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/accounts", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "accounts"] }
+          }
+        },
+        {
+          "name": "2.2. Accounts - Get Account Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/accounts/{{primaryAccountId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "accounts", "{{primaryAccountId}}"] }
+          }
+        },
+        {
+          "name": "2.3. Transfers - Internal / Napas 247 Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{primaryAccountId}}\",\n  \"toAccountNumber\": \"1029384756\",\n  \"toBankCode\": \"VINATRUST\",\n  \"amount\": 500000.0000,\n  \"transferChannel\": \"INTERNAL\",\n  \"authMethod\": \"PIN\",\n  \"description\": \"Chuyen tien an toi\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/transfers", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "transfers"] }
+          }
+        },
+        {
+          "name": "2.4. Transfers - Get History by Account",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/transfers/history/{{primaryAccountId}}", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "transfers", "history", "{{primaryAccountId}}"] }
+          }
+        },
+        {
+          "name": "2.5. Cards - Get My Cards",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"cardId\", jsonData.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/cards", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "cards"] }
+          }
+        },
+        {
+          "name": "2.6. Cards - Issue New Virtual Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"{{primaryAccountId}}\",\n  \"cardType\": \"DEBIT\",\n  \"isVirtual\": true,\n  \"pin\": \"123456\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/cards/issue", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "cards", "issue"] }
+          }
+        },
+        {
+          "name": "2.7. Cards - Lock Card",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/lock", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "cards", "{{cardId}}", "lock"] }
+          }
+        },
+        {
+          "name": "2.8. Cards - Unlock Card",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/unlock", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "cards", "{{cardId}}", "unlock"] }
+          }
+        },
+        {
+          "name": "2.9. Savings - Get My Savings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.success && jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"savingsId\", jsonData.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/savings", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "savings"] }
+          }
+        },
+        {
+          "name": "2.10. Savings - Open Term Savings",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountId\": \"{{primaryAccountId}}\",\n  \"principalAmount\": 2000000.0000,\n  \"termMonths\": 6\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/savings/open", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "savings", "open"] }
+          }
+        },
+        {
+          "name": "2.11. Savings - Settle Savings Account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/savings/{{savingsId}}/settle", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "savings", "{{savingsId}}", "settle"] }
+          }
+        },
+        {
+          "name": "2.12. Loans - Get My Loans",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/loans", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "loans"] }
+          }
+        },
+        {
+          "name": "2.13. Loans - Apply for Loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanType\": \"CONSUMER\",\n  \"requestedAmount\": 20000000.0000,\n  \"termMonths\": 12,\n  \"collateralValue\": 0,\n  \"monthlyIncome\": 15000000.0000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/banking/loans/apply", "host": ["{{baseUrl}}"], "path": ["api", "v1", "banking", "loans", "apply"] }
+          }
+        }
+      ]
+    }
+  ]
+}
