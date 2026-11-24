@@ -8,6 +8,11 @@
 .DS_Store
 Thumbs.db
 
+# Environment variables
+.env
+.env*.local
+!.env.example
+
 # Dependencies & Build artifacts
 node_modules/
 **/node_modules/

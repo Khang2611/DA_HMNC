@@ -1,0 +1,61 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: vinatrust-bank-backend
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/vinatrust_bank}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: identity
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    create-schemas: true
+    schemas:
+      - identity
+    locations: classpath:db/migration
+
+# Security & JWT Configuration
+app:
+  security:
+    jwt:
+      # 256-bit base64 secret key
+      secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION:900000} # 15 minutes (15 * 60 * 1000)
+      refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days (7 * 24 * 60 * 60 * 1000)
+
+  cors:
+    allowed-origins:
+      - "http://localhost:8081"   # Expo / React Native Metro Bundler & Web
+      - "http://localhost:19006"  # Expo Web legacy default
+      - "http://localhost:3000"   # Alternative Web local
+      - "http://127.0.0.1:8081"
+      - "http://10.0.2.2:8081"    # Android emulator
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - "*"
+    allow-credentials: true
+    max-age: 3600
+
