@@ -1,0 +1,1445 @@
+{
+  "info": {
+    "_postman_id": "b3e0c091-8888-4f51-b0e2-vinatrust-bank-v2",
+    "name": "VinaTrust Bank - Complete API Suite (Modular Monolith)",
+    "description": "Bộ sưu tập Postman hoàn chỉnh cho hệ thống Ngân hàng số VinaTrust Bank.\nBao gồm đầy đủ các module:\n1. Auth & Identity (Đăng ký, Đăng nhập, Profile, Refresh Token, Đăng xuất)\n2. Admin Management (Lấy danh sách người dùng, lọc/tìm kiếm, phân quyền & gán đội chuyên trách, thu hồi phiên)\n3. Banking - Accounts (Danh sách tài khoản, chi tiết tài khoản)\n4. Banking - Money Transfers (Chuyển tiền nội bộ, Napas 247 liên ngân hàng, Lịch sử giao dịch)\n5. Banking - Cards (Phát hành thẻ ảo/vật lý, Khóa/Mở khóa thẻ, Báo mất thẻ vĩnh viễn)\n6. Banking - Savings (Mở sổ tiết kiệm kỳ hạn, Tất toán sổ)\n7. Banking - Loans (Nộp hồ sơ vay tiêu dùng, thế chấp, xem danh sách khoản vay)\n\nToàn bộ script test tự động trích xuất token (accessToken, adminAccessToken) và ID các thực thể để gọi liên hoàn không cần copy-paste thủ công.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminRefreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "primaryAccountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cardId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "savingsId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "registeredEmail",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth & Identity",
+      "description": "Các API xác thực, đăng ký, đăng nhập và quản lý phiên người dùng",
+      "item": [
+        {
+          "name": "1.1 Đăng ký tài khoản Customer mới",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Status is 201 Created\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(201);",
+                  "    });",
+                  "    if (json.data && json.data.email) {",
+                  "        pm.collectionVariables.set(\"registeredEmail\", json.data.email);",
+                  "    }",
+                  "    if (json.data && json.data.userId) {",
+                  "        pm.collectionVariables.set(\"targetUserId\", json.data.userId);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"customer_{{$randomInt}}\",\n  \"password\": \"VinaTrust@2026\",\n  \"fullName\": \"Nguyễn Văn Khang\",\n  \"email\": \"khang_{{$randomInt}}@vinatrust.vn\",\n  \"phone\": \"0987654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Đăng ký tài khoản khách hàng. Hệ thống tạo tài khoản ở trạng thái PENDING_VERIFICATION và gửi mã OTP 6 số vào email."
+          }
+        },
+        {
+          "name": "1.2 Xác thực Email bằng mã OTP 6 số",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Email verified successfully\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registeredEmail}}\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "verify-email"
+              ]
+            },
+            "description": "Xác thực mã OTP 6 số nhận qua email (xem tại http://localhost:8025 trên Mailpit). Kích hoạt tài khoản sang ACTIVE và mở tài khoản thanh toán mặc định."
+          }
+        },
+        {
+          "name": "1.3 Gửi lại mã OTP xác thực (Resend Verification)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"OTP resent successfully\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{registeredEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/resend-verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "resend-verification"
+              ]
+            },
+            "description": "Yêu cầu gửi lại mã OTP mới (cooldown 60s). Mã cũ chưa dùng sẽ bị hủy."
+          }
+        },
+        {
+          "name": "1.4 Đăng nhập Khách hàng (Customer Login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Login Customer Success\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "        pm.expect(json.success).to.be.true;",
+                  "    });",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
+                  "        pm.collectionVariables.set(\"refreshToken\", json.data.refreshToken);",
+                  "    }",
+                  "    if (json.data && json.data.user) {",
+                  "        pm.collectionVariables.set(\"targetUserId\", json.data.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"admin\",\n  \"password\": \"VinaTrustAdmin@2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Đăng nhập bằng username/email/phone. Tự động lưu accessToken và refreshToken vào collection variables."
+          }
+        },
+        {
+          "name": "1.5 Đăng nhập Quản trị viên (Admin Login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Login Admin Success\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "        pm.expect(json.data.user.role).to.eql(\"ADMIN\");",
+                  "    });",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.collectionVariables.set(\"adminAccessToken\", json.data.accessToken);",
+                  "        pm.collectionVariables.set(\"adminRefreshToken\", json.data.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"admin\",\n  \"password\": \"VinaTrustAdmin@2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Đăng nhập bằng tài khoản Quản trị viên khởi tạo từ seeder. Lưu riêng vào `adminAccessToken` để test các API Admin."
+          }
+        },
+        {
+          "name": "1.6 Lấy thông tin cá nhân hiện tại (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Lấy profile của tài khoản đang đăng nhập từ token Bearer."
+          }
+        },
+        {
+          "name": "1.7 Làm mới Token (Refresh Token Rotation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Token Rotated\", function() {",
+                  "        pm.expect(json.success).to.be.true;",
+                  "    });",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.collectionVariables.set(\"accessToken\", json.data.accessToken);",
+                  "        pm.collectionVariables.set(\"refreshToken\", json.data.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Xoay vòng refresh token. Token cũ sẽ bị hủy ngay lập tức và cấp cặp token mới."
+          }
+        },
+        {
+          "name": "1.8 Đăng xuất (Logout)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Đăng xuất tài khoản, thu hồi refresh token trong cơ sở dữ liệu."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Admin Management (Role ADMIN)",
+      "description": "Các API phân quyền, duyệt và quản lý người dùng dành riêng cho ADMIN",
+      "item": [
+        {
+          "name": "2.1 Lấy danh sách người dùng (Phân trang)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Get users success\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "    });",
+                  "    if (json.data && json.data.content && json.data.content.length > 0) {",
+                  "        var nonAdmin = json.data.content.find(function(u) { return u.role !== 'ADMIN'; });",
+                  "        var target = nonAdmin || json.data.content[0];",
+                  "        pm.collectionVariables.set(\"targetUserId\", target.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Lấy danh sách người dùng phân trang. Tự động lưu targetUserId của người dùng đầu tiên để kiểm thử đổi vai trò."
+          }
+        },
+        {
+          "name": "2.2 Lọc người dùng theo vai trò (Role = CUSTOMER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?role=CUSTOMER&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "CUSTOMER"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lọc người dùng theo vai trò: CUSTOMER, AGENT, TEAM_LEAD, hoặc ADMIN."
+          }
+        },
+        {
+          "name": "2.3 Tìm kiếm người dùng theo từ khóa (keyword)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?keyword=Khang&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "Khang"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Tìm kiếm đa năng khớp với Họ tên, Tên đăng nhập, Email hoặc Số điện thoại."
+          }
+        },
+        {
+          "name": "2.4 Đổi vai trò thành AGENT kèm đội chuyên trách",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Role updated to AGENT\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.role).to.eql(\"AGENT\");",
+                  "    pm.expect(json.data.assignedTeam).to.eql(\"Chuyển tiền và tra soát\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"AGENT\",\n  \"assignedTeam\": \"Chuyển tiền và tra soát\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
+            },
+            "description": "Nâng cấp người dùng lên AGENT. Yêu cầu thuộc 1 trong 6 đội chuyên trách. Tự động thu hồi refresh token của user."
+          }
+        },
+        {
+          "name": "2.5 Đổi vai trò thành TEAM_LEAD kèm đội chuyên trách",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Role updated to TEAM_LEAD\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.role).to.eql(\"TEAM_LEAD\");",
+                  "    pm.expect(json.data.assignedTeam).to.eql(\"An ninh và gian lận\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"TEAM_LEAD\",\n  \"assignedTeam\": \"An ninh và gian lận\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
+            },
+            "description": "Thăng chức thành TEAM_LEAD của đội An ninh và gian lận."
+          }
+        },
+        {
+          "name": "2.6 Chuyển vai trò về CUSTOMER (Bình thường hóa)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Role updated to CUSTOMER\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.role).to.eql(\"CUSTOMER\");",
+                  "    pm.expect(json.data.assignedTeam).to.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"CUSTOMER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
+            },
+            "description": "Chuyển lại về khách hàng thông thường, hệ thống tự xóa đội chuyên trách về null."
+          }
+        },
+        {
+          "name": "2.7 Đổi vai trò thất bại - Đội không hợp lệ (Negative Test)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Rejected due to invalid team\", function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422, 409]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"AGENT\",\n  \"assignedTeam\": \"Đội marketing truyền thông\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "users",
+                "{{targetUserId}}",
+                "role"
+              ]
+            },
+            "description": "Kiểm tra chặn phân công vào đội không thuộc 6 đội hợp lệ theo quy tắc ngân hàng."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Banking - Accounts",
+      "description": "Quản lý tài khoản thanh toán cá nhân",
+      "item": [
+        {
+          "name": "3.1 Lấy danh sách tài khoản của tôi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Accounts retrieved\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "    });",
+                  "    if (json.data && json.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"primaryAccountId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "accounts"
+              ]
+            },
+            "description": "Lấy danh sách các tài khoản ngân hàng của người dùng đang đăng nhập. Tự động lưu primaryAccountId."
+          }
+        },
+        {
+          "name": "3.2 Lấy chi tiết tài khoản theo ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/accounts/{{primaryAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "accounts",
+                "{{primaryAccountId}}"
+              ]
+            },
+            "description": "Xem chi tiết số dư, hạn mức ngày, số tài khoản của 1 tài khoản cụ thể."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Banking - Transfers",
+      "description": "Chuyển tiền nội bộ, liên ngân hàng Napas và tra cứu lịch sử giao dịch",
+      "item": [
+        {
+          "name": "4.1 Chuyển tiền nội bộ VinaTrust Bank",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Transfer success or balance check\", function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{primaryAccountId}}\",\n  \"toAccountNumber\": \"1000888999\",\n  \"toBankCode\": \"VINATRUST\",\n  \"amount\": 50000.0000,\n  \"transferChannel\": \"INTERNAL\",\n  \"authMethod\": \"SMART_OTP\",\n  \"description\": \"Chuyen tien an trua\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "transfers"
+              ]
+            },
+            "description": "Chuyển khoản nội bộ giữa các tài khoản trong hệ thống VinaTrust Bank."
+          }
+        },
+        {
+          "name": "4.2 Chuyển tiền liên ngân hàng (Napas 247)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{primaryAccountId}}\",\n  \"toAccountNumber\": \"999888777666\",\n  \"toBankCode\": \"VCB\",\n  \"amount\": 100000.0000,\n  \"transferChannel\": \"NAPAS247\",\n  \"authMethod\": \"BIOMETRIC\",\n  \"description\": \"Thanh toan tien nha thang 11\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "transfers"
+              ]
+            },
+            "description": "Chuyển khoản nhanh 24/7 sang ngân hàng khác qua cổng Napas."
+          }
+        },
+        {
+          "name": "4.3 Xem lịch sử giao dịch của tài khoản",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/transfers/history/{{primaryAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "transfers",
+                "history",
+                "{{primaryAccountId}}"
+              ]
+            },
+            "description": "Lấy danh sách các giao dịch chuyển tiền đã thực hiện từ tài khoản nguồn."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Banking - Cards",
+      "description": "Phát hành thẻ ghi nợ/tín dụng, quản lý trạng thái khóa/mở và báo mất thẻ",
+      "item": [
+        {
+          "name": "5.1 Lấy danh sách thẻ của tôi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Cards retrieved\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "    });",
+                  "    if (json.data && json.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"cardId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/cards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards"
+              ]
+            },
+            "description": "Lấy toàn bộ thẻ ghi nợ/tín dụng (vật lý & ảo). Tự động lưu cardId."
+          }
+        },
+        {
+          "name": "5.2 Phát hành thẻ ảo mới (Virtual Debit Card)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Card issued\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(201);",
+                  "    });",
+                  "    if (json.data && json.data.id) {",
+                  "        pm.collectionVariables.set(\"cardId\", json.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"{{primaryAccountId}}\",\n  \"cardType\": \"DEBIT\",\n  \"isVirtual\": true,\n  \"pin\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/cards/issue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "issue"
+              ]
+            },
+            "description": "Phát hành thẻ ghi nợ ảo kích hoạt tức thì."
+          }
+        },
+        {
+          "name": "5.3 Khóa thẻ (Lock Card)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Card locked\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"LOCKED\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/lock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "{{cardId}}",
+                "lock"
+              ]
+            },
+            "description": "Tạm khóa thẻ để bảo mật khi không sử dụng."
+          }
+        },
+        {
+          "name": "5.4 Mở khóa thẻ (Unlock Card)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Card unlocked\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"ACTIVE\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/unlock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "{{cardId}}",
+                "unlock"
+              ]
+            },
+            "description": "Mở khóa thẻ trở lại trạng thái ACTIVE."
+          }
+        },
+        {
+          "name": "5.5 Báo mất thẻ (Report Lost Card)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Card reported lost and blocked permanently\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"BLOCKED\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/cards/{{cardId}}/report-lost",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "cards",
+                "{{cardId}}",
+                "report-lost"
+              ]
+            },
+            "description": "Báo mất thẻ. Thẻ sẽ bị phong tỏa vĩnh viễn (BLOCKED) và không thể tự mở lại."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Banking - Savings",
+      "description": "Mở sổ tiết kiệm trực tuyến và tất toán sổ",
+      "item": [
+        {
+          "name": "6.1 Lấy danh sách sổ tiết kiệm của tôi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Savings retrieved\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "    });",
+                  "    if (json.data && json.data.length > 0) {",
+                  "        pm.collectionVariables.set(\"savingsId\", json.data[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/savings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "savings"
+              ]
+            },
+            "description": "Lấy danh sách các sổ tiết kiệm đang hoạt động hoặc đã tất toán. Tự động lưu savingsId."
+          }
+        },
+        {
+          "name": "6.2 Mở sổ tiết kiệm trực tuyến (Term Savings)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.test(\"Savings account opened\", function() {",
+                  "        pm.expect(pm.response.code).to.eql(201);",
+                  "    });",
+                  "    if (json.data && json.data.id) {",
+                  "        pm.collectionVariables.set(\"savingsId\", json.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceAccountId\": \"{{primaryAccountId}}\",\n  \"principalAmount\": 2000000.0000,\n  \"termMonths\": 6\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/savings/open",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "savings",
+                "open"
+              ]
+            },
+            "description": "Mở sổ tiết kiệm trích tiền từ tài khoản thanh toán nguồn. Lãi suất tự động tính theo kỳ hạn."
+          }
+        },
+        {
+          "name": "6.3 Tất toán sổ tiết kiệm (Settle Savings)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Savings account settled\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"SETTLED\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/savings/{{savingsId}}/settle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "savings",
+                "{{savingsId}}",
+                "settle"
+              ]
+            },
+            "description": "Tất toán sổ tiết kiệm, hoàn trả tiền gốc và tiền lãi tích lũy về tài khoản nguồn."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Banking - Loans",
+      "description": "Đăng ký hồ sơ vay tiêu dùng, thế chấp và theo dõi tiến độ duyệt khoản vay",
+      "item": [
+        {
+          "name": "7.1 Lấy danh sách các khoản vay của tôi",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/loans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "loans"
+              ]
+            },
+            "description": "Lấy danh sách các hồ sơ vay vốn đã đăng ký của khách hàng."
+          }
+        },
+        {
+          "name": "7.2 Đăng ký khoản vay tiêu dùng tín chấp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Consumer loan application submitted\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"PENDING\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanType\": \"CONSUMER\",\n  \"requestedAmount\": 30000000.0000,\n  \"termMonths\": 12,\n  \"collateralValue\": 0,\n  \"monthlyIncome\": 18000000.0000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/loans/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "loans",
+                "apply"
+              ]
+            },
+            "description": "Nộp hồ sơ vay tiêu dùng nhanh qua ứng dụng."
+          }
+        },
+        {
+          "name": "7.3 Đăng ký khoản vay thế chấp bất động sản",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Mortgage loan application submitted\", function() {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"PENDING\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loanType\": \"MORTGAGE\",\n  \"requestedAmount\": 500000000.0000,\n  \"termMonths\": 60,\n  \"collateralValue\": 1200000000.0000,\n  \"monthlyIncome\": 45000000.0000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/banking/loans/apply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "banking",
+                "loans",
+                "apply"
+              ]
+            },
+            "description": "Nộp hồ sơ vay thế chấp bất động sản hạn mức lớn."
+          }
+        }
+      ]
+    }
+  ]
+}

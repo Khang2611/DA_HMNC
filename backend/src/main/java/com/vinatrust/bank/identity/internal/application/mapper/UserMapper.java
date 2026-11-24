@@ -19,7 +19,8 @@ public class UserMapper {
                 user.getRole().name(),
                 user.getStatus().name(),
                 user.getKycStatus(),
-                user.getCustomerTier()
+                user.getCustomerTier(),
+                user.isKycBiometricVerified()
         );
     }
 
@@ -35,10 +36,12 @@ public class UserMapper {
                 user.getRole().name(),
                 user.getStatus().name(),
                 user.getKycStatus(),
+                user.isKycBiometricVerified(),
+                user.isEmailVerified(),
                 user.getCustomerTier(),
+                user.getAssignedTeam(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
     }
 }
-

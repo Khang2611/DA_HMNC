@@ -15,7 +15,7 @@ public record UserSummaryDto(
     String role,
     String status,
     String kycStatus,
-    String customerTier
+    String customerTier,
+    boolean kycBiometricVerified
 ) {
 }
-

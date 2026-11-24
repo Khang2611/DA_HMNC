@@ -1,7 +1,10 @@
 package com.vinatrust.bank.identity.internal.infrastructure.persistence;
 
+import com.vinatrust.bank.identity.internal.domain.Role;
 import com.vinatrust.bank.identity.internal.domain.User;
 import com.vinatrust.bank.identity.internal.domain.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -57,8 +60,17 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public boolean existsByRole(Role role) {
+        return jpaUserRepository.existsByRole(role);
+    }
+
+    @Override
+    public Page<User> findUsers(Role role, String keyword, Pageable pageable) {
+        return jpaUserRepository.findUsersFiltered(role, keyword, pageable);
+    }
+
+    @Override
     public User save(User user) {
         return jpaUserRepository.save(user);
     }
 }
-
