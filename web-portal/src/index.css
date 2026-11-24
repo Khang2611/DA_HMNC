@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-bg: #16131F;
+    --brand-surface: #4A3F4B;
+    --brand-surface-upper: #3E3440;
+    --brand-surface-l1: #1E1826;
+    --brand-surface-l2: #201A27;
+    --brand-surface-l3: #282132;
+    --brand-primary: #806C79;
+    --brand-secondary: #C1A0AC;
+    --brand-light: #F0D9E4;
+  }
+
+  body {
+    background-color: var(--brand-bg);
+    color: var(--brand-light);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Liquid Glass utilities matching VinaTrust Design Tokens */
+.glass-card {
+  background: rgba(30, 24, 38, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(193, 160, 172, 0.22);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.glass-card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(193, 160, 172, 0.4);
+  box-shadow: 0 12px 32px rgba(128, 108, 121, 0.2);
+}
+
+.glass-panel {
+  background: rgba(62, 52, 64, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(193, 160, 172, 0.15);
+}
+
+.glass-input {
+  background: rgba(32, 26, 39, 0.85);
+  border: 1px solid rgba(193, 160, 172, 0.25);
+  color: #F0D9E4;
+  transition: all 0.2s ease;
+}
+.glass-input:focus {
+  border-color: #C1A0AC;
+  box-shadow: 0 0 0 3px rgba(193, 160, 172, 0.18);
+  outline: none;
+}
+.glass-input::placeholder {
+  color: rgba(240, 217, 228, 0.35);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #C1A0AC 0%, #806C79 100%);
+  color: #16131F;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(193, 160, 172, 0.25);
+}
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(193, 160, 172, 0.35);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: rgba(44, 37, 56, 0.75);
+  border: 1px solid rgba(193, 160, 172, 0.25);
+  color: #F0D9E4;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(62, 52, 64, 0.85);
+  border-color: rgba(193, 160, 172, 0.45);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #16131F;
+}
+::-webkit-scrollbar-thumb {
+  background: #4A3F4B;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #806C79;
+}
+

@@ -32,16 +32,20 @@ spring:
     locations: classpath:db/migration
 
   mail:
-    host: ${MAIL_HOST:localhost}
-    port: ${MAIL_PORT:1025}
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
-          auth: ${MAIL_SMTP_AUTH:false}
+          auth: ${MAIL_SMTP_AUTH:true}
           starttls:
-            enable: ${MAIL_SMTP_STARTTLS:false}
+            enable: ${MAIL_SMTP_STARTTLS:true}
+            required: ${MAIL_SMTP_STARTTLS_REQUIRED:true}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 # Application Configurations
 app:
@@ -71,7 +75,10 @@ app:
       - "http://localhost:8081"   # Expo / React Native Metro Bundler & Web
       - "http://localhost:19006"  # Expo Web legacy default
       - "http://localhost:3000"   # Alternative Web local
+      - "http://localhost:5173"   # Vite default
+      - "http://localhost:5174"   # Vite Web Portal
       - "http://127.0.0.1:8081"
+      - "http://127.0.0.1:5174"
       - "http://10.0.2.2:8081"    # Android emulator
     allowed-methods:
       - GET
