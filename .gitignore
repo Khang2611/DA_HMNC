@@ -1,0 +1,20 @@
+# Agent instructions and metadata
+.agents/
+**/.agents/
+.agent/
+**/.agent/
+
+# System / OS
+.DS_Store
+Thumbs.db
+
+# Dependencies & Build artifacts
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.expo/
+**/.expo/
+web-build/
+**/web-build/
+*.log
